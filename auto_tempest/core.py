@@ -4,8 +4,6 @@ import json
 from selenium import webdriver
 from selenium.common import NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.common.keys import Keys
 import time
 
 # Set the path to your ChromeDriver executable
@@ -27,39 +25,39 @@ def save_to_csv(in_scrapping_data, param):
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(keys_stc)
         csv_writer.writerows(flattened_data)
-# load_button = "//button[@class='more-results']"
-#
-# # ==============this part of the code will load entire webpage=======================
-# # ===================================================================================
-#
-#
-# # Function to check if the button is present on the page
-# def is_button_present():
-#     try:
-#         button = driver.find_element(By.XPATH, load_button)
-#         return True
-#     except:
-#         return False
-#
-#
-# # Keep clicking on the button until it no longer appears
-# while is_button_present():
-#     try:
-#         button = driver.find_element(By.XPATH, load_button)
-#         button.click()
-#         time.sleep(2)
-#     except ElementNotInteractableException:
-#         print('data loading buttons are not clickable anymore.')
-#         break
-#     except NoSuchElementException:
-#         print('No More loading buttons found on the page')
-#         break
-#     except ElementClickInterceptedException:
-#         print('got ElementClickInterceptedException on the page')
-#         break
-#     except:
-#         print('got unknown issue on the page')
-#         break
+load_button = "//button[@class='more-results']"
+
+# ==============this part of the code will load entire webpage=======================
+# ===================================================================================
+
+
+# Function to check if the button is present on the page
+def is_button_present():
+    try:
+        button = driver.find_element(By.XPATH, load_button)
+        return True
+    except:
+        return False
+
+
+# Keep clicking on the button until it no longer appears
+while is_button_present():
+    try:
+        button = driver.find_element(By.XPATH, load_button)
+        button.click()
+        time.sleep(2)
+    except ElementNotInteractableException:
+        print('data loading buttons are not clickable anymore.')
+        break
+    except NoSuchElementException:
+        print('No More loading buttons found on the page')
+        break
+    except ElementClickInterceptedException:
+        print('got ElementClickInterceptedException on the page')
+        break
+    except:
+        print('got unknown issue on the page')
+        break
 
 # ====================================================================================
 
