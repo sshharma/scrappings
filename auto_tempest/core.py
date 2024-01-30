@@ -1,10 +1,11 @@
 import csv
 import json
+import re
+import time
 
 from selenium import webdriver
-from selenium.common import NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
-import time
 
 # Set the path to your ChromeDriver executable
 chrome_path = 'D:/Applications/Chrome-Driver/latest/chromedriver.exe'
@@ -18,6 +19,7 @@ driver.get(url)
 driver.maximize_window()
 time.sleep(2)
 
+
 def save_to_csv(in_scrapping_data, param):
     keys_stc = in_scrapping_data[0].keys()
     flattened_data = [[item[key_stc] for key_stc in keys_stc] for item in scrapping_data]
@@ -25,39 +27,39 @@ def save_to_csv(in_scrapping_data, param):
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(keys_stc)
         csv_writer.writerows(flattened_data)
-load_button = "//button[@class='more-results']"
-
-# ==============this part of the code will load entire webpage=======================
-# ===================================================================================
-
-
-# Function to check if the button is present on the page
-def is_button_present():
-    try:
-        button = driver.find_element(By.XPATH, load_button)
-        return True
-    except:
-        return False
-
-
-# Keep clicking on the button until it no longer appears
-while is_button_present():
-    try:
-        button = driver.find_element(By.XPATH, load_button)
-        button.click()
-        time.sleep(2)
-    except ElementNotInteractableException:
-        print('data loading buttons are not clickable anymore.')
-        break
-    except NoSuchElementException:
-        print('No More loading buttons found on the page')
-        break
-    except ElementClickInterceptedException:
-        print('got ElementClickInterceptedException on the page')
-        break
-    except:
-        print('got unknown issue on the page')
-        break
+# load_button = "//button[@class='more-results']"
+#
+# # ==============this part of the code will load entire webpage=======================
+# # ===================================================================================
+#
+#
+# # Function to check if the button is present on the page
+# def is_button_present():
+#     try:
+#         button = driver.find_element(By.XPATH, load_button)
+#         return True
+#     except:
+#         return False
+#
+#
+# # Keep clicking on the button until it no longer appears
+# while is_button_present():
+#     try:
+#         button = driver.find_element(By.XPATH, load_button)
+#         button.click()
+#         time.sleep(2)
+#     except ElementNotInteractableException:
+#         print('data loading buttons are not clickable anymore.')
+#         break
+#     except NoSuchElementException:
+#         print('No More loading buttons found on the page')
+#         break
+#     except ElementClickInterceptedException:
+#         print('got ElementClickInterceptedException on the page')
+#         break
+#     except:
+#         print('got unknown issue on the page')
+#         break
 
 # ====================================================================================
 
@@ -104,6 +106,11 @@ for result_index, result_element in enumerate(result_types, start=1):
                 current_car['City'] = driver.find_element(By.XPATH,
                                                           xpath_li + "/div[@class='info-wrap']/div[@class='info location has-distance']/span/span[@class='city']").text
                 current_car['Listing_Link'] = curr_car_element.get_attribute('href')
+                vin_element = driver.find_element(By.XPATH,
+                                                  xpath_li+"/div[@class='inline-tools']/div[@class='tools']/div/a")
+                onclick_value = vin_element.get_attribute('onclick')
+                vin_pattern = re.compile(r"`([A-Z0-9]{17})`")
+                current_car['VIN'] = vin_pattern.findall(onclick_value)
                 print(current_car)
                 scrapping_data.append(current_car)
 
