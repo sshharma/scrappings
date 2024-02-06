@@ -42,10 +42,29 @@ print(df)
 for index, row in df.iterrows():
     web_link = row['web_link']
     print(web_link)
-    # content = driver.get(web_link)
-    # Update the DataFrame with the extracted content
-    df.at[index, 'author'] = 'Sachin Sharma'+str(index)
-    df.at[index, 'article'] = 'extracted data'+str(index)
+    driver.get(web_link)
+    main_element = driver.find_element(By.CLASS_NAME, 'main-body page-article-show')
+    author_element = main_element.find_element(By.CLASS_NAME, 'author')
+    df.at[index, 'author'] = author_element.find_element(By.TAG_NAME, 'a').text
+
+    # add code to read keywords
+    keyword_element = main_element.find_element(By.CLASS_NAME, 'article-keywords')
+    keywords = keyword_element.find_elements(By.TAG_NAME, 'a')
+    key_data = ''
+    for keyword_index, keyword in enumerate(keywords, start=1):
+        key_data =+ str(keyword.text)
+        if keyword_index < len(keywords):
+            key_data += ", "
+    #     once I have access to enr.com, try 'join' method for this
+    df.at[index, 'keywords'] = key_data
+
+    article_element = main_element.find_element(By.CLASS_NAME, 'content')
+    paragraphs = article_element.find_elements(By.TAG_NAME, 'p')
+    article = ''
+    for para_index, paragraph in enumerate(paragraphs, start=1):
+        article =+ paragraph.text
+
+    df.at[index, 'article'] = article
 
 csv_path = 'D:/Applications/Idea-Projects/scrappings/outputs/enr_2.csv'
 
