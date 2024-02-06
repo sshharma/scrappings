@@ -2,9 +2,9 @@ import csv
 import json
 import re
 import time
-
+import pandas as pd
 from selenium import webdriver
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 
 # Set the path to your ChromeDriver executable
@@ -27,39 +27,41 @@ def save_to_csv(in_scrapping_data, param):
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(keys_stc)
         csv_writer.writerows(flattened_data)
-# load_button = "//button[@class='more-results']"
+
+
+load_button = "//button[@class='more-results']"
 #
 # # ==============this part of the code will load entire webpage=======================
 # # ===================================================================================
-#
-#
-# # Function to check if the button is present on the page
-# def is_button_present():
-#     try:
-#         button = driver.find_element(By.XPATH, load_button)
-#         return True
-#     except:
-#         return False
-#
-#
-# # Keep clicking on the button until it no longer appears
-# while is_button_present():
-#     try:
-#         button = driver.find_element(By.XPATH, load_button)
-#         button.click()
-#         time.sleep(2)
-#     except ElementNotInteractableException:
-#         print('data loading buttons are not clickable anymore.')
-#         break
-#     except NoSuchElementException:
-#         print('No More loading buttons found on the page')
-#         break
-#     except ElementClickInterceptedException:
-#         print('got ElementClickInterceptedException on the page')
-#         break
-#     except:
-#         print('got unknown issue on the page')
-#         break
+
+
+# Function to check if the button is present on the page
+def is_button_present():
+    try:
+        button = driver.find_element(By.XPATH, load_button)
+        return True
+    except:
+        return False
+
+
+# Keep clicking on the button until it no longer appears
+while is_button_present():
+    try:
+        button = driver.find_element(By.XPATH, load_button)
+        button.click()
+        time.sleep(2)
+    except ElementNotInteractableException:
+        print('data loading buttons are not clickable anymore.')
+        break
+    except NoSuchElementException:
+        print('No More loading buttons found on the page')
+        break
+    except ElementClickInterceptedException:
+        print('got ElementClickInterceptedException on the page')
+        break
+    except:
+        print('got unknown issue on the page')
+        break
 
 # ====================================================================================
 
@@ -130,85 +132,95 @@ print("completed processing entire page. \nNow will start reading the data from 
 # Extract keys from the first item in the list
 time.sleep(5)
 
-
-def fix_key(input_key):
-    if input_key == '':
-        input_key = 'unknown'
-    return input_key
-
-
-for entry in scrapping_data:
-    try:
-        # =========== for Private Auto Dealers =============================================
-        if 'PrivateAuto' in entry['Dealer']:
-            driver.get(entry['Listing_Link'])
-            time.sleep(5)
-            xpath_wfull = "//main/div/section[@class='w-full']/div[1]/div/div"
-            wfull_items = driver.find_elements(By.XPATH, xpath_wfull)
-            wfull_item_count = len(wfull_items)
-            for wfull_index, wfull_element in enumerate(wfull_items, start=1):
-                str_wfull_index = str(wfull_index)
-                xpath_key = "div[2]/div[@class='name font-normal text-sm text-[#7E7E7E]']"
-                xpath_value = "div[2]/div[@class='value font-bold text-base']"
-                key = driver.find_element(By.XPATH, xpath_wfull + "[" + str_wfull_index + "]/" + xpath_key).text
-                value = driver.find_element(By.XPATH, xpath_wfull + "[" + str_wfull_index + "]/" + xpath_value).text
-                key = fix_key(key)
-                entry[key] = value
-                print(key + ":" + value)
-
-            driver.find_element(By.XPATH, "//div[@class='font-semibold text-2xl md:text-3xl cursor-pointer'][1]").click()
-            time.sleep(1)
-            xpath_add_info_p = "//div[@class='mb-6']/div/div"
-            add_info_items_p = driver.find_elements(By.XPATH, xpath_add_info_p)
-            for add_info_p_index, add_info_p_element in enumerate(add_info_items_p, start=1):
-                print(1)
-                str_add_info_p_index = str(add_info_p_index)
-                xpath_add_info = xpath_add_info_p + "[" + str_add_info_p_index + "]/div"
-                add_info_items = driver.find_elements(By.XPATH, xpath_add_info)
-                for add_info_index, add_info_element in enumerate(add_info_items, start=1):
-                    str_add_info_index = str(add_info_index)
-                    xpath_key = xpath_add_info + "[" + str_add_info_index + "]/p[1]"
-                    xpath_value = xpath_add_info + "[" + str_add_info_index + "]/p[2]"
-                    key = driver.find_element(By.XPATH, xpath_key).text
-                    value = driver.find_element(By.XPATH, xpath_value).text
-                    key = fix_key(key)
-                    entry[key] = value
-                    print(key + ":" + value)
-        # =========== Private Auto Dealers ENDs Here=============================================
-        # =========== Cars.com Dealer Starts here ===============================================
-        elif 'Cars.com' in entry['Cars.com']:
-            driver.get(entry['Listing_Link'])
-            time.sleep(5)
-            xpath_all_key = "//section[@class= 'sds-page-section basics-section']/dl/dt"
-            xpath_all_value = "//section[@class= 'sds-page-section basics-section']/dl/dd"
-            # all_elements = driver.find_elements(By.)
-        # =========== Cars.com Dealer Ends here ================================================
-        # =========== AutoTempest Dealer Starts from here =======================================
-        elif 'AutoTempest' in entry['Dealer']:
-            driver.get(entry['Listing_Link'])
-            time.sleep(5)
-            xpath_wfull = "//div[@data-content-id='summary']/table/tbody/tr"
-            wfull_items = driver.find_elements(By.XPATH, xpath_wfull)
-            for wfull_index, wfull_element in enumerate(wfull_items, start=1):
-                str_wfull_index = str(wfull_index)
-                key = driver.find_element(By.XPATH, xpath_wfull+"["+str_wfull_index+"]/td[1]").text
-                value = driver.find_element(By.XPATH, xpath_wfull+"["+str_wfull_index+"]/td[2]").text
-                key = fix_key(key)
-                entry[key] = value
-                print(key + ":" + value)
-    # =========== AutoTempest Dealer Ends here =======================================
-
-    except:
-        print(f"Issue with link:{entry['Listing_Link']}")
-        pass
-
-
+#
+# def fix_key(input_key):
+#     if input_key == '':
+#         input_key = 'unknown'
+#     return input_key
+#
+#
+# for entry in scrapping_data:
+#     try:
+#         # =========== for Private Auto Dealers =============================================
+#         if 'PrivateAuto' in entry['Dealer']:
+#             driver.get(entry['Listing_Link'])
+#             time.sleep(5)
+#             xpath_wfull = "//main/div/section[@class='w-full']/div[1]/div/div"
+#             wfull_items = driver.find_elements(By.XPATH, xpath_wfull)
+#             wfull_item_count = len(wfull_items)
+#             for wfull_index, wfull_element in enumerate(wfull_items, start=1):
+#                 str_wfull_index = str(wfull_index)
+#                 xpath_key = "div[2]/div[@class='name font-normal text-sm text-[#7E7E7E]']"
+#                 xpath_value = "div[2]/div[@class='value font-bold text-base']"
+#                 key = driver.find_element(By.XPATH, xpath_wfull + "[" + str_wfull_index + "]/" + xpath_key).text
+#                 value = driver.find_element(By.XPATH, xpath_wfull + "[" + str_wfull_index + "]/" + xpath_value).text
+#                 key = fix_key(key)
+#                 entry[key] = value
+#                 print(key + ":" + value)
+#
+#             driver.find_element(By.XPATH, "//div[@class='font-semibold text-2xl md:text-3xl cursor-pointer'][1]").click()
+#             time.sleep(1)
+#             xpath_add_info_p = "//div[@class='mb-6']/div/div"
+#             add_info_items_p = driver.find_elements(By.XPATH, xpath_add_info_p)
+#             for add_info_p_index, add_info_p_element in enumerate(add_info_items_p, start=1):
+#                 print(1)
+#                 str_add_info_p_index = str(add_info_p_index)
+#                 xpath_add_info = xpath_add_info_p + "[" + str_add_info_p_index + "]/div"
+#                 add_info_items = driver.find_elements(By.XPATH, xpath_add_info)
+#                 for add_info_index, add_info_element in enumerate(add_info_items, start=1):
+#                     str_add_info_index = str(add_info_index)
+#                     xpath_key = xpath_add_info + "[" + str_add_info_index + "]/p[1]"
+#                     xpath_value = xpath_add_info + "[" + str_add_info_index + "]/p[2]"
+#                     key = driver.find_element(By.XPATH, xpath_key).text
+#                     value = driver.find_element(By.XPATH, xpath_value).text
+#                     key = fix_key(key)
+#                     entry[key] = value
+#                     print(key + ":" + value)
+#         # =========== Private Auto Dealers ENDs Here=============================================
+#         # =========== Cars.com Dealer Starts here ===============================================
+#         elif 'Cars.com' in entry['Cars.com']:
+#             driver.get(entry['Listing_Link'])
+#             time.sleep(5)
+#             xpath_all_key = "//section[@class= 'sds-page-section basics-section']/dl/dt"
+#             xpath_all_value = "//section[@class= 'sds-page-section basics-section']/dl/dd"
+#             # all_elements = driver.find_elements(By.)
+#         # =========== Cars.com Dealer Ends here ================================================
+#         # =========== AutoTempest Dealer Starts from here =======================================
+#         elif 'AutoTempest' in entry['Dealer']:
+#             driver.get(entry['Listing_Link'])
+#             time.sleep(5)
+#             xpath_wfull = "//div[@data-content-id='summary']/table/tbody/tr"
+#             wfull_items = driver.find_elements(By.XPATH, xpath_wfull)
+#             for wfull_index, wfull_element in enumerate(wfull_items, start=1):
+#                 str_wfull_index = str(wfull_index)
+#                 key = driver.find_element(By.XPATH, xpath_wfull+"["+str_wfull_index+"]/td[1]").text
+#                 value = driver.find_element(By.XPATH, xpath_wfull+"["+str_wfull_index+"]/td[2]").text
+#                 key = fix_key(key)
+#                 entry[key] = value
+#                 print(key + ":" + value)
+#     # =========== AutoTempest Dealer Ends here =======================================
+#
+#     except:
+#         print(f"Issue with link:{entry['Listing_Link']}")
+#         pass
+#
+#
 
 # ====================================================================================================================
 # =============This code will save the extracted data to csv =========================================================
 # Specify the file path where you want to save the CSV file
+csv_path = 'D:/Applications/Idea-Projects/scrappings/outputs/enr_2.csv'
+# save_to_csv(extract, )
+
+# Create a Pandas DataFrame
+df = pd.DataFrame(scrapping_data)
+
+# Display the DataFrame
+print(df)
+df.to_csv(csv_path, index=False)
+
 try:
-    save_to_csv(scrapping_data, "D:/Document/Kirti/final_result.csv")
+    df.to_csv("D:/Document/Kirti/final_result.csv", index=False)
 except:
     json_file_path = "D:/Document/Kirti/final_result_json.json"
     # Serialize and save to JSON file

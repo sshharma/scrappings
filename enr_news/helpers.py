@@ -10,3 +10,4 @@ def extract_numericals(inValue):
     else:
         print("No numerical value found in the given text.")
     return numerical_value
+
