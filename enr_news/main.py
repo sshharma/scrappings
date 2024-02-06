@@ -6,9 +6,14 @@ from selenium.webdriver.common.by import By
 from enr_news.helpers import extract_numericals
 
 chrome_path = 'D:/Applications/Chrome-Driver/latest/chromedriver.exe'
-driver = webdriver.Chrome()
-keyword = 'Kashmir'  # 'Suicide'
-url = 'https://www.enr.com/search?q=' + keyword
+
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--incognito")
+
+driver = webdriver.Chrome(options=chrome_options)
+
+keyword_name = 'Suicide'  # 'Kashmir'
+url = 'https://www.enr.com/search?q=' + keyword_name
 
 driver.get(url)
 driver.maximize_window()
@@ -40,32 +45,49 @@ df = pd.DataFrame(extract)
 print(df)
 
 for index, row in df.iterrows():
-    web_link = row['web_link']
-    print(web_link)
-    driver.get(web_link)
-    main_element = driver.find_element(By.CLASS_NAME, 'main-body page-article-show')
-    author_element = main_element.find_element(By.CLASS_NAME, 'author')
-    df.at[index, 'author'] = author_element.find_element(By.TAG_NAME, 'a').text
+    try:
+        driver.close()
+        driver = webdriver.Chrome(options=chrome_options)
+        web_link = row['web_link']
+        print(web_link)
+        driver.get(web_link)
+        try:
+            main_element = driver.find_element(By.XPATH, "//article[@class='main-body page-article-show ']")
+        except:
+            main_element = driver.find_element(By.TAG_NAME, "div")
+        try:
+            author_element = main_element.find_element(By.CLASS_NAME, 'author')
+            df.at[index, 'author'] = author_element.find_element(By.TAG_NAME, 'a').text
+        except:
+            df.at[index, 'author'] = 'no_value'
 
-    # add code to read keywords
-    keyword_element = main_element.find_element(By.CLASS_NAME, 'article-keywords')
-    keywords = keyword_element.find_elements(By.TAG_NAME, 'a')
-    key_data = ''
-    for keyword_index, keyword in enumerate(keywords, start=1):
-        key_data =+ str(keyword.text)
-        if keyword_index < len(keywords):
-            key_data += ", "
-    #     once I have access to enr.com, try 'join' method for this
-    df.at[index, 'keywords'] = key_data
+        # add code to read keywords
+        key_data = ''
+        try:
+            keyword_element = main_element.find_element(By.CLASS_NAME, 'article-keywords')
+            keywords = keyword_element.find_elements(By.TAG_NAME, 'a')
+            for keyword_index, keyword in enumerate(keywords, start=1):
+                key_data += str(keyword.text)
+                if keyword_index < len(keywords):
+                    key_data += ", "
+        finally:
+            print(f"Issue with keyword block")
+        #     once I have access to enr.com, try 'join' method for this
+        df.at[index, 'keywords'] = key_data
 
-    article_element = main_element.find_element(By.CLASS_NAME, 'content')
-    paragraphs = article_element.find_elements(By.TAG_NAME, 'p')
-    article = ''
-    for para_index, paragraph in enumerate(paragraphs, start=1):
-        article =+ paragraph.text
+        try:
+            article_element = main_element.find_element(By.CLASS_NAME, 'content')
+            # paragraphs = article_element.find_elements(By.TAG_NAME, 'p')
+            article = ''
+            # for para_index, paragraph in enumerate(paragraphs, start=1):
+            #     article += str(paragraph.text)
+            paragraphs = article_element.find_elements(By.TAG_NAME, 'p')
+            article = ' '.join([str(paragraph.text) for paragraph in paragraphs])
+            df.at[index, 'article'] = article
+        except:
+            print(f"Couldn't find article for {row['web_link']}")
+    except:
+        print("There is some major issue with {row['web_link']}")
 
-    df.at[index, 'article'] = article
-
-csv_path = 'D:/Applications/Idea-Projects/scrappings/outputs/enr_2.csv'
-
+csv_path = 'D:/Applications/Idea-Projects/scrappings/outputs/ENR_' + keyword_name + str(time.time())+'.csv'
 df.to_csv(csv_path, index=False)
