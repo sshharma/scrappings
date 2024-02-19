@@ -83,7 +83,7 @@ print('-----------------------------------------------')
 
 
 min_miles = 0
-max_miles = 10
+max_miles = 1000000
 gap_miles = 10
 
 mile_ranges = [[i, i + gap_miles] for i in range(min_miles, max_miles, gap_miles)]
@@ -95,7 +95,7 @@ for min_mile, max_mile in mile_ranges:
     url_mx_mile = '&maxmiles=' + str(max_mile)
     mile_url = base_url+url_mn_mile+url_mx_mile
     driver.get(mile_url)
-    # click_load_more(driver)
+    click_load_more(driver)
 
     result_list_items = driver.find_elements(By.CLASS_NAME, "result-wrap")
     print(f"result-list-items are :{len(result_list_items)}")
@@ -154,6 +154,6 @@ for min_mile, max_mile in mile_ranges:
         current_car.clear()
 
 print(len(SCRAPPED_DATA))
-csv_path = 'Output/AutoTempest_Extract' + str(time.time()) + '.csv'
+csv_path = 'AutoTempest_Extract' + str(time.time()) + '.csv'
 df = pd.DataFrame(SCRAPPED_DATA)
 df.to_csv(csv_path, index=False)
