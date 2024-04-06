@@ -44,13 +44,16 @@ def initialize():
 
     return driver
 
-def load_page(url, driver):
+
+def load_page(url, driver, k):
     for i in range(3):
         try:
             driver.get(url)
             print(f"URL requested", end='\r')
-            # continue with the next steps
-            break
+            # if page is loaded successfully
+            if driver.title == f"{k} - Explore - Google Trends":
+                print(f"Page loaded successfully!!", end='\r')
+                break               # continue with the next steps
         except TimeoutException as e:
             print("Page load Timeout Occurred. Refreshing !!!", end='\r')
             driver.refresh()
@@ -210,9 +213,9 @@ def log_filter(log_):
 #     jj = json.loads(j.strip())
 #     df = pd.DataFrame(jj['default']['timelineData'])
 #     return df
-def scrape_gtrends(url):
+def scrape_gtrends(url,k):
     '''scrapes the data for one url and saves as a CSV'''
-    load_page(url, driver)
+    load_page(url, driver,k)
     sleep(3)  # wait for the requests to take place
     print(url)
     clickable(xpath='trends-widget', wait=10) # make sure the target element is clickable (i.e., fully loaded)
@@ -273,7 +276,6 @@ def getGTrends():
         dfs = pd.DataFrame()
 
 
-
     # Loop over cleaned guide and scrape one by one
     for i in tqdm(guide.index):
         try:
@@ -281,7 +283,7 @@ def getGTrends():
             url = guide.loc[i, 'url']
             k = guide.loc[i, 'keyword']
             g = guide.loc[i, 'geo']
-            df = scrape_gtrends(url)
+            df = scrape_gtrends(url, k)
             if not isinstance(df, pd.DataFrame):
                 print('not a dataframe .. sleeping for a minute')
                 driver.close()
